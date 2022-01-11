@@ -1,0 +1,13 @@
+{
+  "name": "node-ace-msg-parser",
+  "version": "1.0.0",
+  "main": "lib/binding.js",
+  "gypfile": true,
+  "license": "MIT",
+  "scripts": {
+    "test": "node --napi-modules ./test/test_binding.js"
+  },
+  "dependencies": {
+    "node-addon-api": "^4.2.0"
+  }
+}
