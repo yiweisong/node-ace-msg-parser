@@ -4,6 +4,8 @@
 #define USER_PREAMB 0x55
 #define NEAM_HEAD 0x24
 
+#define MAX_NMEA_TYPES 17
+
 typedef struct
 {
     uint8_t nmea_flag;
@@ -19,8 +21,9 @@ typedef struct
 
 typedef struct
 {
-    uint8_t payload;
-} uartBinaryPacket;
+    char* packetType;
+    uint8_t* payload;
+} UartBinaryPacket;
 
 typedef struct
 {

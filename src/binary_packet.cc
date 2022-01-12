@@ -45,8 +45,8 @@ Napi::Value BinaryPacket::GetPayload(const Napi::CallbackInfo &info) {
 Napi::Object BinaryPacket::NewInstance(Napi::Env env, std::string packetType){
     Napi::EscapableHandleScope scope(env);
     Napi::Object wrap = Napi::Object::New(env);
-    JSConstructor().New({Napi::String::New(env, packetType)});
-    //JSConstructor().New({});
+    //JSConstructor().New({Napi::String::New(env, packetType)});
+    JSConstructor().New({});
     // .New(
     //     {
     //         Napi::String::New(env, packetType)

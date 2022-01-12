@@ -11,18 +11,13 @@ class UartMessageParser : public Napi::ObjectWrap<UartMessageParser> {
     Napi::Value Receive(const Napi::CallbackInfo&);
 
   private:
-    // static inline Napi::Function JSConstructor(Napi::Function *func = nullptr) {
-    //     static Napi::FunctionReference constructor;
-
-    //     if (func != nullptr) {
-    //         constructor = Napi::Persistent(*func);
-    //         constructor.SuppressDestruct();
-    //     }
-    //     return constructor.Value();
-    // }
     std::string _key;
+    std::vector<std::string> _userPacketsTypeList;
+    int _allowed_packets_length;
     usrRaw _user_raw;
-    void _accept(uint8_t data);
+    UartBinaryPacket* _accept(uint8_t data);
+    UartBinaryPacket* _parse_nmea(uint8_t data);
+    UartBinaryPacket* _parse_user_packet_payload(uint8_t* buff, uint32_t nbyte);
 };
 
 #endif

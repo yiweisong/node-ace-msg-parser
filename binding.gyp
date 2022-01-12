@@ -4,7 +4,7 @@
       'target_name': 'node-ace-msg-parser',
       'sources': [ 
         'src/addon.cc',
-        'src/binary_packet.cc',
+        'src/utils.cc',
         'src/uart_message_parser.cc'
       ],
       'include_dirs': ["<!@(node -p \"require('node-addon-api').include\")"],
