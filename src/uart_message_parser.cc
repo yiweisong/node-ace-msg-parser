@@ -1,5 +1,6 @@
 #include "utils.h"
 #include "uart_message_parser.h"
+#include <iostream>
 
 using namespace Napi;
 
@@ -65,11 +66,13 @@ Napi::Value UartMessageParser::Receive(const Napi::CallbackInfo &info)
     
     for (size_t i = 0; i < count; i++){
         uint8_t val = buf[i];
-        UartBinaryPacket* binaryPacket = this->_accept(val);
-        if(binaryPacket->packetType != 0){
+        int ret = this->_accept(val);
+        if(ret>0){
             Napi::Object packet = Napi::Object::New(env);
-            packet.Set(Napi::String::New(env, "packetType"),binaryPacket->packetType);
-            packet.Set(Napi::String::New(env, "payload"), binaryPacket->payload);
+            packet.Set(Napi::String::New(env, "packetType"),
+                Napi::String::New(env, _currentPacket.packetType, _currentPacket.packetTypeLen));
+            // packet.Set(Napi::String::New(env, "payload"),
+            //     Napi::Buffer<uint8_t>::New(env, _currentPacket.payload, _currentPacket.payloadLen));
             list.Set(startIndex, packet);
             startIndex++;
         }
@@ -90,8 +93,8 @@ void UartMessageParser::Init(Napi::Env env, Napi::Object exports)
     exports.Set("UartMessageParser", func);
 }
 
-UartBinaryPacket* UartMessageParser::_parse_nmea(uint8_t data) {
-    UartBinaryPacket* ret = {0};
+int UartMessageParser::_parse_nmea(uint8_t data) {
+    int ret=0;
 
     if (_user_raw.nmea_flag == 0) {
         if (NEAM_HEAD == data) {
@@ -125,32 +128,36 @@ UartBinaryPacket* UartMessageParser::_parse_nmea(uint8_t data) {
             _user_raw.nmea[_user_raw.nmeabyte++] = 0x0A;
             _user_raw.nmea[_user_raw.nmeabyte++] = 0;
             _user_raw.nmea_flag = 0;
-            ret->packetType = "nmea";
-            ret->payload = _user_raw.nmea;
+
+            _currentPacket.packetType = "nmea";
+            _currentPacket.packetTypeLen = 4;
+            _currentPacket.payload = _user_raw.nmea;
+            _currentPacket.payloadLen = sizeof(_user_raw.nmea);
+            ret = 2;
         }
     }
     return ret;
 }
 
-UartBinaryPacket* UartMessageParser::_parse_user_packet_payload(uint8_t* buff, uint32_t nbyte){
-    UartBinaryPacket* ret={0};
+int UartMessageParser::_parse_user_packet_payload(uint8_t* buff, uint32_t nbyte){
+    int ret = 0;
 
     uint8_t payload_length = buff[2];
-    char packetType[4] = { 0 };
-    uint8_t* payload;
-    
+    char packetType[4];
+    uint8_t payload[payload_length];
+
     memcpy(packetType, buff, 2);
-
     memcpy(payload, buff + 3, payload_length);
-
-    ret->packetType = packetType;
-    ret->payload = payload;
-
-    return ret;    
+    
+    _currentPacket.packetType = packetType;
+    _currentPacket.packetTypeLen = 4;
+    _currentPacket.payload = payload;
+    _currentPacket.payloadLen = payload_length;
+    return 1;    
 }
 
-UartBinaryPacket* UartMessageParser::_accept(uint8_t data){
-    UartBinaryPacket* ret = {0};
+int UartMessageParser::_accept(uint8_t data){
+    int ret = 0;
     if (_user_raw.flag == 0) {
 		_user_raw.header[_user_raw.header_len++] = data;
 		if (_user_raw.header_len == 1) {

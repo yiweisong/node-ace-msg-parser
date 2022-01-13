@@ -22,7 +22,9 @@ typedef struct
 typedef struct
 {
     char* packetType;
+    uint8_t packetTypeLen;
     uint8_t* payload;
+    uint8_t payloadLen;
 } UartBinaryPacket;
 
 typedef struct

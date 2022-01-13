@@ -15,9 +15,10 @@ class UartMessageParser : public Napi::ObjectWrap<UartMessageParser> {
     std::vector<std::string> _userPacketsTypeList;
     int _allowed_packets_length;
     usrRaw _user_raw;
-    UartBinaryPacket* _accept(uint8_t data);
-    UartBinaryPacket* _parse_nmea(uint8_t data);
-    UartBinaryPacket* _parse_user_packet_payload(uint8_t* buff, uint32_t nbyte);
+    int _accept(uint8_t data);
+    int _parse_nmea(uint8_t data);
+    int _parse_user_packet_payload(uint8_t* buff, uint32_t nbyte);
+    UartBinaryPacket _currentPacket;
 };
 
 #endif
