@@ -9,26 +9,25 @@
 
 typedef struct
 {
+    // user binary
+    uint8_t binary_flag;
+    uint8_t binary_msg_header[4];
+    uint8_t binary_msg_header_len;
+    uint32_t binary_msg_len;
+    uint8_t binary_msg_buff[2048];
+    uint16_t binary_packet_type;
+    uint8_t binary_packet_len_type;
+
     uint8_t nmea_flag;
-    uint8_t flag;
-    uint8_t header_len;
-    uint8_t header[4];
-    uint32_t nbyte;
-    uint8_t buff[256];
-    uint32_t nmeabyte;
-    uint8_t nmea[256];
-    uint8_t ntype;
-} usrRaw;
+    uint32_t nmea_msg_len;
+    uint8_t nmea_msg_buff[256];
+} ParseStatus;
 
 typedef struct
 {
-    char* packetType;
-    uint8_t payloadLen;
-} UartBinaryPacket;
+    char* packet_type;
+    uint8_t payload_len;
+} PacketInfo;
 
-typedef struct
-{
-    uint8_t payload;
-} ethernetBinaryPacket;
 
 #endif

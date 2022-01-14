@@ -26,7 +26,7 @@ int is_nmea_char(char c)
 	else if (c >= '0' && c <= '9') {
 		return 1;
 	}
-	else if (c == '$' ,c == '-' || c == ',' || c == '.' || c == '*') {
+	else if (c == '$' || c == '-' || c == ',' || c == '.' || c == '*') {
 		return 1;
 	}
 	return 0;

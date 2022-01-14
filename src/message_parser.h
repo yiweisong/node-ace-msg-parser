@@ -4,18 +4,22 @@
 #include <napi.h>
 #include "types.h"
 
-class UartMessageParser : public Napi::ObjectWrap<UartMessageParser> {
+class MessageParser : public Napi::ObjectWrap<MessageParser> {
   public:
     static void Init(Napi::Env env, Napi::Object exports);
-    UartMessageParser(const Napi::CallbackInfo&);
+    MessageParser(const Napi::CallbackInfo&);
     Napi::Value Receive(const Napi::CallbackInfo&);
+    void Reset(const Napi::CallbackInfo&);
 
   private:
     std::string _key;
-    std::vector<std::string> _userPacketsTypeList;
+    std::vector<uint16_t> _allowedUserPacketsTypeList;
+    std::vector<std::string> _allowedNMEATypeList;
     int _allowedPacketsLength;
-
-    ParseStatus _userRaw;
+    int _allowedNMEAsLength;
+    
+    ParseStatus _parseStatus;
+    void _reset();
     int _accept(uint8_t data);
     int _parse_nmea(uint8_t data);
     int _parse_user_packet_payload(uint8_t* buff, uint32_t nbyte);
