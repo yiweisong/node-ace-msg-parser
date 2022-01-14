@@ -8,13 +8,26 @@ const parser = new parsers.UartMessageParser('parser-key',
 
 let total = 0;
 
-const readStream = fs.createReadStream(path.join(process.cwd(), 'test', 'user.bin'));
+//
+const filePath = path.join(process.cwd(), 'test', 'user.bin');// '/Users/songyiwei/Desktop/debug/20220107/rtk330la_log_2178200286_20220107_145729/user_2022_01_07_14_57_43.bin';
+const readStream = fs.createReadStream(filePath);
 
 console.time('parser');
 
+// setTimeout(() => {
+//     const buf = readStream.read(1000);
+//     console.time('parser');
+//     const result = parser.receive(buf);
+//     //console.log('result', result);
+//     total += result.length;
+//     console.timeEnd('parser');
+// }, 2000)
+
 readStream.on('data', (buf) => {
     const result = parser.receive(buf);
-    //console.log('result', result);
+    // console.log('result', result);
+    const existItem = result.find(t => t.packetType === 'nmea');
+
     total += result.length;
 })
 

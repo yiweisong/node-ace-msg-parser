@@ -46,9 +46,8 @@ UartMessageParser::UartMessageParser(const Napi::CallbackInfo &info)
 Napi::Value UartMessageParser::Receive(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
-    // buffer
     Napi::Array list = Napi::Array::New(env);
-    size_t startIndex = 0;
+
     if (info.Length() != 1) {
         Napi::Error::New(info.Env(), "Expected exactly one argument")
             .ThrowAsJavaScriptException();
@@ -61,6 +60,7 @@ Napi::Value UartMessageParser::Receive(const Napi::CallbackInfo &info)
         return info.Env().Undefined();
     }
 
+    size_t startIndex = 0;
     Napi::Buffer<char> buf = info[0].As<Napi::Buffer<char>>();
     size_t count = buf.Length();
     
@@ -68,11 +68,24 @@ Napi::Value UartMessageParser::Receive(const Napi::CallbackInfo &info)
         uint8_t val = buf[i];
         int ret = this->_accept(val);
         if(ret>0){
+            std::string packetTypeStr(_currentPacket.packetType);
             Napi::Object packet = Napi::Object::New(env);
+
             packet.Set(Napi::String::New(env, "packetType"),
-                Napi::String::New(env, _currentPacket.packetType, _currentPacket.packetTypeLen));
-            // packet.Set(Napi::String::New(env, "payload"),
-            //     Napi::Buffer<uint8_t>::New(env, _currentPacket.payload, _currentPacket.payloadLen));
+                Napi::String::New(env, packetTypeStr));
+
+            // parse as user packet
+            if(ret==1){
+                packet.Set(Napi::String::New(env, "payload"),
+                    Napi::Buffer<uint8_t>::Copy(env, _user_raw.buff+3, _currentPacket.payloadLen));    
+            }
+
+            // parse as nmea packet
+            if(ret==2){
+                packet.Set(Napi::String::New(env, "payload"),
+                    Napi::Buffer<uint8_t>::Copy(env, _user_raw.nmea, _currentPacket.payloadLen));
+            }
+            
             list.Set(startIndex, packet);
             startIndex++;
         }
@@ -130,9 +143,7 @@ int UartMessageParser::_parse_nmea(uint8_t data) {
             _user_raw.nmea_flag = 0;
 
             _currentPacket.packetType = "nmea";
-            _currentPacket.packetTypeLen = 4;
-            _currentPacket.payload = _user_raw.nmea;
-            _currentPacket.payloadLen = sizeof(_user_raw.nmea);
+            _currentPacket.payloadLen = _user_raw.nmeabyte;
             ret = 2;
         }
     }
@@ -150,9 +161,8 @@ int UartMessageParser::_parse_user_packet_payload(uint8_t* buff, uint32_t nbyte)
     memcpy(payload, buff + 3, payload_length);
     
     _currentPacket.packetType = packetType;
-    _currentPacket.packetTypeLen = 4;
-    _currentPacket.payload = payload;
     _currentPacket.payloadLen = payload_length;
+
     return 1;    
 }
 
