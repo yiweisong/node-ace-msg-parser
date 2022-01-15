@@ -12,18 +12,21 @@ class MessageParser : public Napi::ObjectWrap<MessageParser> {
     void Reset(const Napi::CallbackInfo&);
 
   private:
+    int _allowedPacketsLength;
+    int _allowedNMEAsLength;
+
     std::string _key;
     std::vector<uint16_t> _allowedUserPacketsTypeList;
     std::vector<std::string> _allowedNMEATypeList;
-    int _allowedPacketsLength;
-    int _allowedNMEAsLength;
     
     ParseStatus _parseStatus;
+    PacketInfo _currentPacket;
+
     void _reset();
     int _accept(uint8_t data);
     int _parse_nmea(uint8_t data);
     int _parse_user_packet_payload(uint8_t* buff, uint32_t nbyte);
-    PacketInfo _currentPacket;
+    bool _can_calc_binary_payload_len();
 };
 
 #endif

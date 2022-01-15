@@ -53,14 +53,19 @@ MessageParser::MessageParser(const Napi::CallbackInfo &info)
             if(packetLengthType == "uint8")
             {
                 _parseStatus.binary_packet_len_type = 1;
+                // 2 preamble + 2 packet type + 1 packet len + 2 crc
+                _parseStatus.binary_wrapper_len = 7;
             } 
             else if(packetLengthType == "uint32")
             {
                 _parseStatus.binary_packet_len_type = 4;
+                // 2 preamble + 2 packet type + 4 packet len + 2 crc
+                _parseStatus.binary_wrapper_len = 10;
             } 
             else
             {
                 _parseStatus.binary_packet_len_type = 1;
+                _parseStatus.binary_wrapper_len = 7;
             }
         }
     }
@@ -105,22 +110,24 @@ Napi::Value MessageParser::Receive(const Napi::CallbackInfo &info)
         uint8_t val = buf[i];
         int ret = this->_accept(val);
         if(ret>0){
-            std::string packetTypeStr(_currentPacket.packet_type);
             Napi::Object packet = Napi::Object::New(env);
-
-            packet.Set(Napi::String::New(env, "packetType"),
-                Napi::String::New(env, packetTypeStr));
 
             // parse as user packet
             if(ret==1){
+                packet.Set(Napi::String::New(env, "packetType"),
+                    Napi::String::New(env, packetTypeStr));
+
                 packet.Set(Napi::String::New(env, "payload"),
-                    Napi::Buffer<uint8_t>::Copy(env, _userRaw.buff+3, _currentPacket.payload_len));    
+                    Napi::Buffer<uint8_t>::Copy(env, _parseStatus.binary_msg_buff, _parseStatus.binary_msg_len));    
             }
 
             // parse as nmea packet
             if(ret==2){
+                packet.Set(Napi::String::New(env, "packetType"),
+                    Napi::String::New(env, packetTypeStr));
+
                 packet.Set(Napi::String::New(env, "payload"),
-                    Napi::Buffer<uint8_t>::Copy(env, _userRaw.nmea, _currentPacket.payload_len));
+                    Napi::Buffer<uint8_t>::Copy(env, _parseStatus.nmea_msg_buff, _parseStatus.nmea_msg_len));
             }
             
             list.Set(startIndex, packet);
@@ -151,45 +158,47 @@ void MessageParser::Init(Napi::Env env, Napi::Object exports)
 int MessageParser::_parse_nmea(uint8_t data) {
     int ret=0;
 
-    // if (_userRaw.nmea_flag == 0) {
-    //     if (NEAM_HEAD == data) {
-    //         _userRaw.nmea_flag = 1;
-    //         _userRaw.nmeabyte = 0;
-    //         _userRaw.nmea[_userRaw.nmeabyte++] = data;
-    //     }
-    // }
-    // else if (_userRaw.nmea_flag == 1) {
-    //     _userRaw.nmea[_userRaw.nmeabyte++] = data;
-    //     if (_userRaw.nmeabyte == 6) {
-    //         int i = 0;
-    //         char NMEA[8] = { 0 };
-    //         memcpy(NMEA, _userRaw.nmea, 6);
-    //         for (i = 0; i < MAX_NMEA_TYPES; i++) {
-    //             if (strcmp(NMEA, nmea_type(i)) == 0) {
-    //                 _userRaw.nmea_flag = 2;
-    //                 break;
-    //             }
-    //         }
-    //         if (_userRaw.nmea_flag != 2) {
-    //             _userRaw.nmea_flag = 0;
-    //         }
-    //     }
-    // }
-    // else if (_userRaw.nmea_flag == 2) {
-    //     if (is_nmea_char(data)) {
-    //         _userRaw.nmea[_userRaw.nmeabyte++] = data;
-    //     }
-    //     else {
-    //         _userRaw.nmea[_userRaw.nmeabyte++] = 0x0A;
-    //         _userRaw.nmea[_userRaw.nmeabyte++] = 0;
-    //         _userRaw.nmea_flag = 0;
+    if (_parseStatus.nmea_flag == 0) {
+        if (NEAM_HEAD == data) {
+            _parseStatus.nmea_flag = 1;
+            _parseStatus.nmea_msg_len = 0;
+            _parseStatus.nmea_msg_buff[_parseStatus.nmea_msg_len++] = data;
+        }
+    }
+    else if (_parseStatus.nmea_flag == 1) {
+        _parseStatus.nmea_msg_buff[_parseStatus.nmea_msg_len++] = data;
+        if (_parseStatus.nmea_msg_len == 6) {
+            int i = 0;
+            char NMEA[8] = { 0 };
+            memcpy(NMEA, _parseStatus.nmea_msg_buff, 6);
+            for (i = 0; i < _allowedNMEAsLength; i++) {
+                std::string nmeaType = _allowedNMEATypeList.at(i);
+                if (strcmp(NMEA, nmeaType) == 0) {
+                    _parseStatus.nmea_flag = 2;
+                    break;
+                }
+            }
+            if (_parseStatus.nmea_flag != 2) {
+                _parseStatus.nmea_flag = 0;
+            }
+        }
+    }
+    else if (_parseStatus.nmea_flag == 2) {
+        if (is_nmea_char(data)) {
+            _parseStatus.nmea_msg_buff[_parseStatus.nmea_msg_len++] = data;
+        }
+        else {
+            _parseStatus.nmea_msg_buff[_parseStatus.nmea_msg_len++] = 0x0A;
+            _parseStatus.nmea_msg_buff[_parseStatus.nmea_msg_len++] = 0;
+            _parseStatus.nmea_flag = 0;
 
-    //         char packetType[5] = "nmea";
-    //         _currentPacket.packet_type = packetType;
-    //         _currentPacket.payload_len = _userRaw.nmeabyte;
-    //         ret = 2;
-    //     }
-    // }
+            //char packetType[5] = "nmea";
+            //_currentPacket.packet_type = packetType;
+            //_currentPacket.payload_len = _userRaw.nmeabyte;
+            _currentPacket.nmea_msg_len = _parseStatus.nmea_msg_len;
+            ret = 2;
+        }
+    }
     return ret;
 }
 
@@ -211,50 +220,105 @@ int MessageParser::_parse_user_packet_payload(uint8_t* buff, uint32_t nbyte){
 
 int MessageParser::_accept(uint8_t data){
     int ret = 0;
-    // if (_userRaw.flag == 0) {
-	// 	_userRaw.header[_userRaw.header_len++] = data;
-	// 	if (_userRaw.header_len == 1) {
-	// 		if (_userRaw.header[0] != USER_PREAMB) {
-	// 			_userRaw.header_len = 0;
-	// 		}
-	// 	}
-	// 	if (_userRaw.header_len == 2) {
-	// 		if (_userRaw.header[1] != USER_PREAMB) {
-	// 			_userRaw.header_len = 0;
-	// 		}
-	// 	}
-	// 	if (_userRaw.header_len == 4) {
-	// 		int i = 0;
-	// 		for (i = 0; i < _allowedPacketsLength; i++) {
-	// 			const std::string packetType = _userPacketsTypeList.at(i);
-	// 			if (packetType[0] == _userRaw.header[2] && packetType[1] == _userRaw.header[3]) {
-	// 				_userRaw.flag = 1;
-	// 				_userRaw.buff[_userRaw.nbyte++] = packetType[0];
-	// 				_userRaw.buff[_userRaw.nbyte++] = packetType[1];
-	// 				break;
-	// 			}
-	// 		}
-	// 		_userRaw.header_len = 0;
-	// 	}
-	// 	ret = _parse_nmea(data);
-	// }
-	// else {
-	// 	_userRaw.buff[_userRaw.nbyte++] = data;
-	// 	if (_userRaw.nbyte == _userRaw.buff[2] + 5) { //5 = [type1,type2,len] + [crc1,crc2]
-	// 		uint16_t packet_crc = 256 * _userRaw.buff[_userRaw.nbyte - 2] + _userRaw.buff[_userRaw.nbyte - 1];
-	// 		if (packet_crc == calc_crc(_userRaw.buff, _userRaw.nbyte - 2)) {
-	// 			ret = _parse_user_packet_payload(_userRaw.buff, _userRaw.nbyte);
-	// 		}
-	// 		_userRaw.flag = 0;
-	// 		_userRaw.nbyte = 0;
-	// 	}
-	// }
+    if (_parseStatus.binary_flag == 0) {
+		_parseStatus.binary_msg_header[_parseStatus.binary_msg_read_index++] = data;
+		if (_parseStatus.binary_msg_read_index == 1) {
+			if (_parseStatus.binary_msg_header[0] != USER_PREAMB) {
+				_parseStatus.binary_msg_read_index = 0;
+			}
+		}
+		if (_parseStatus.binary_msg_read_index == 2) {
+			if (_parseStatus.binary_msg_header[1] != USER_PREAMB) {
+				_parseStatus.binary_msg_read_index = 0;
+			}
+		}
+		if (_parseStatus.binary_msg_read_index == 4) {
+            // uint16_t binaryPacketType = ((_parseStatus.binary_msg_header[2] & 0xffff) << 8)
+            //         | _parseStatus.binary_msg_header[3];
+            uint16_t binaryPacketType = _parseStatus.binary_msg_header[2] * 256 + _parseStatus.binary_msg_header[3];
+			for (int i = 0; i < _allowedPacketsLength; i++)
+            {
+				const uint16_t packetType = _allowedUserPacketsTypeList.at(i);
+				if (binaryPacketType == packetType) 
+                {
+					_parseStatus.binary_flag = 1;
+                    _parseStatus.binary_msg_buff[0] = USER_PREAMB;
+                    _parseStatus.binary_msg_buff[1] = USER_PREAMB;
+					_parseStatus.binary_msg_buff[2] = _parseStatus.binary_msg_header[2];
+					_parseStatus.binary_msg_buff[3] = _parseStatus.binary_msg_header[3];
+					break;
+				}
+			}
+
+            _parseStatus.binary_msg_read_index = _parseStatus.binary_flag ? 4 : 0;
+		}
+		ret = _parse_nmea(data);
+	}
+	else {
+		_parseStatus.binary_msg_buff[_parseStatus.binary_msg_read_index++] = data;
+        
+        if(_parseStatus.binary_flag == 1)
+        {
+            if(this->_can_calc_binary_payload_len())
+            {
+                _parseStatus.binary_flag = 2;
+            }
+        }
+
+        if(_parseStatus.binary_flag == 2)
+        {
+            if (_parseStatus.binary_msg_read_index == _parseStatus.binary_payload_len + _parseStatus.binary_wrapper_len) 
+            {
+                uint16_t packet_crc = 256 * _parseStatus.binary_msg_buff[_parseStatus.binary_msg_read_index - 2] 
+                    + _parseStatus.binary_msg_buff[_parseStatus.binary_msg_read_index - 1];
+                // skip preamble
+                uint8_t *skipPreambleMsgBuff = _parseStatus.binary_msg_buff;
+                if (packet_crc == calc_crc(skipPreambleMsgBuff + 2, _parseStatus.binary_msg_read_index - 2)) {
+                    _currentPacket.binary_packet_len = _parseStatus.binary_msg_len;
+                    ret = 1;
+                }
+                _parseStatus.binary_flag = 0;
+                _parseStatus.binary_msg_read_index = 0;
+            }
+        }
+	}
 	return ret;
+}
+
+bool MessageParser::_can_calc_binary_payload_len()
+{
+    bool can_calc = _parseStatus.binary_msg_read_index - 4 == _parseStatus.binary_packet_len_type;
+
+    if(can_calc)
+    {   
+        uint32_t base = 0;
+        uint8_t startIndex = 4;
+        for(int i = 0; i < _parseStatus.binary_packet_len_type; i++)
+        {
+            startIndex += i;
+            uint8_t partLen = _parseStatus.binary_msg_buff[startIndex];
+            _parseStatus.binary_payload_len += (base + partLen);
+            if(i == 0)
+            {
+                base = 0;
+            }
+            else if(i == 1)
+            {
+                base = 256;
+            }
+            else
+            {
+                base *= 256;
+            }
+        }
+    }
+
+    return can_calc;
 }
 
 void MessageParser::_reset(){
     _parseStatus.binary_flag = 0;
-    _parseStatus.binary_msg_header_len = 0;
+    _parseStatus.binary_msg_read_index = 0;
     _parseStatus.nmea_flag = 0;
     _parseStatus.nmea_msg_len = 0;
 

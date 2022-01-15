@@ -7,13 +7,15 @@
 #define MAX_NMEA_TYPES 17
 
 
+
 typedef struct
 {
     // user binary
     uint8_t binary_flag;
-    uint8_t binary_msg_header[4];
-    uint8_t binary_msg_header_len;
-    uint32_t binary_msg_len;
+    uint8_t binary_msg_header[4]; //preamble
+    uint16_t binary_msg_read_index;
+    uint16_t binary_payload_len;
+    uint8_t binary_wrapper_len;
     uint8_t binary_msg_buff[2048];
     uint16_t binary_packet_type;
     uint8_t binary_packet_len_type;
@@ -25,8 +27,8 @@ typedef struct
 
 typedef struct
 {
-    char* packet_type;
-    uint8_t payload_len;
+    uint32_t binary_msg_len;
+    uint32_t nmea_msg_len;
 } PacketInfo;
 
 
