@@ -115,19 +115,19 @@ Napi::Value MessageParser::Receive(const Napi::CallbackInfo &info)
             // parse as user packet
             if(ret==1){
                 packet.Set(Napi::String::New(env, "packetType"),
-                    Napi::String::New(env, packetTypeStr));
+                    Napi::Number::New(env, _parseStatus.binary_packet_type));
 
                 packet.Set(Napi::String::New(env, "payload"),
-                    Napi::Buffer<uint8_t>::Copy(env, _parseStatus.binary_msg_buff, _parseStatus.binary_msg_len));    
+                    Napi::Buffer<uint8_t>::Copy(env, _parseStatus.binary_msg_buff, _currentPacket.binary_msg_len));    
             }
 
             // parse as nmea packet
             if(ret==2){
                 packet.Set(Napi::String::New(env, "packetType"),
-                    Napi::String::New(env, packetTypeStr));
+                    Napi::Number::New(env, 0x6e4d)); // nmea -> nM
 
                 packet.Set(Napi::String::New(env, "payload"),
-                    Napi::Buffer<uint8_t>::Copy(env, _parseStatus.nmea_msg_buff, _parseStatus.nmea_msg_len));
+                    Napi::Buffer<uint8_t>::Copy(env, _parseStatus.nmea_msg_buff, _currentPacket.nmea_msg_len));
             }
             
             list.Set(startIndex, packet);
@@ -173,7 +173,7 @@ int MessageParser::_parse_nmea(uint8_t data) {
             memcpy(NMEA, _parseStatus.nmea_msg_buff, 6);
             for (i = 0; i < _allowedNMEAsLength; i++) {
                 std::string nmeaType = _allowedNMEATypeList.at(i);
-                if (strcmp(NMEA, nmeaType) == 0) {
+                if (nmeaType.compare(NMEA) == 0) {
                     _parseStatus.nmea_flag = 2;
                     break;
                 }
@@ -246,6 +246,8 @@ int MessageParser::_accept(uint8_t data){
                     _parseStatus.binary_msg_buff[1] = USER_PREAMB;
 					_parseStatus.binary_msg_buff[2] = _parseStatus.binary_msg_header[2];
 					_parseStatus.binary_msg_buff[3] = _parseStatus.binary_msg_header[3];
+                    _parseStatus.binary_packet_type = packetType;
+                    _parseStatus.binary_payload_len = 0;
 					break;
 				}
 			}
@@ -273,9 +275,12 @@ int MessageParser::_accept(uint8_t data){
                     + _parseStatus.binary_msg_buff[_parseStatus.binary_msg_read_index - 1];
                 // skip preamble
                 uint8_t *skipPreambleMsgBuff = _parseStatus.binary_msg_buff;
-                if (packet_crc == calc_crc(skipPreambleMsgBuff + 2, _parseStatus.binary_msg_read_index - 2)) {
-                    _currentPacket.binary_packet_len = _parseStatus.binary_msg_len;
+                if (packet_crc == calc_crc(skipPreambleMsgBuff + 2, _parseStatus.binary_msg_read_index - 4)) {
+                    _currentPacket.binary_msg_len = _parseStatus.binary_msg_read_index;
                     ret = 1;
+                } else{
+                    //TODO: collect crc error
+                    printf("crc error %d\n", _parseStatus.binary_packet_type);
                 }
                 _parseStatus.binary_flag = 0;
                 _parseStatus.binary_msg_read_index = 0;
@@ -291,16 +296,15 @@ bool MessageParser::_can_calc_binary_payload_len()
 
     if(can_calc)
     {   
-        uint32_t base = 0;
+        uint32_t base = 1;
         uint8_t startIndex = 4;
         for(int i = 0; i < _parseStatus.binary_packet_len_type; i++)
         {
-            startIndex += i;
-            uint8_t partLen = _parseStatus.binary_msg_buff[startIndex];
-            _parseStatus.binary_payload_len += (base + partLen);
+            uint8_t partLen = _parseStatus.binary_msg_buff[startIndex+i];
+            _parseStatus.binary_payload_len += base*partLen;
             if(i == 0)
             {
-                base = 0;
+                base = 1;
             }
             else if(i == 1)
             {

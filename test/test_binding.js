@@ -37,56 +37,82 @@ const uartParser = new parsers.MessageParser({
     }
 });
 
-// const ethernetParser = new parsers.MessageParser({
-//     key: 'ethernet-parser-key',
-//     user: {
-//         allows: [
-//             0x0a01, //raw imu
-//             0x0a02, //gnss
-//             0x0a03, //ins
-//             0x0a04, //odometer
-//             0x0a05, //diagnostic
-//             0x0a06, //rtcm_rover
-//             0x0a07, //misalign
-//             0x0a09, //power dr
-//             0x4D44, //check
-//             0x6749, //gnss integrity
-//         ],
-//         packetLengthType: 'uint32',
-//     },
-//     nmea: {
-//         allows: allowedNMEATypes,
-//     }
-// });
+const ethernetParser = new parsers.MessageParser({
+    key: 'ethernet-parser-key',
+    user: {
+        allows: [
+            0x010a, //raw imu
+            0x020a, //gnss
+            0x030a, //ins
+            0x040a, //odometer
+            0x050a, //diagnostic
+            0x060a, //rtcm_rover
+            0x070a, //misalign
+            0x090a, //power dr
+            0x444d, //check
+            0x4967, //gnss integrity
+        ],
+        packetLengthType: 'uint32',
+    },
+    nmea: {
+        allows: allowedNMEATypes,
+    }
+});
 
-let total = 0;
+function testUartParser(){
+    let total = 0;
 
-const filePath = path.join(process.cwd(), 'test', 'user.bin');// '/Users/songyiwei/Desktop/debug/20220107/rtk330la_log_2178200286_20220107_145729/user_2022_01_07_14_57_43.bin';
-const readStream = fs.createReadStream(filePath);
+    const filePath = '/Users/songyiwei/Desktop/debug/20220107/rtk330la_log_2178200286_20220107_145729/user_2022_01_07_14_57_43.bin'; //path.join(process.cwd(), 'test', 'user.bin');
+    const readStream = fs.createReadStream(filePath);
+    
+    console.time('uart parser');
+    
+    readStream.on('data', (buf) => {
+        const result = uartParser.receive(buf);
+        // const existItems = result.filter(t => t.packetType === 0x6e4d);
+        // if (existItems && existItems.length > 0) {
+        //     existItems.forEach((item) => {
+        //         console.log(String.fromCharCode(...item.payload));
+        //     })
+        // }
+        total += result.length;
+    })
+    
+    readStream.on('end', (buf) => {
+        console.log('packet amount', total);
+        console.timeEnd('uart parser');
+    })
+}
 
-console.time('uart parser');
+function testEthernetParser(){
+    let total = 0;
 
-// setTimeout(() => {
-//     const buf = readStream.read(1000);
-//     console.time('parser');
-//     const result = parser.receive(buf);
-//     //console.log('result', result);
-//     total += result.length;
-//     console.timeEnd('parser');
-// }, 2000)
+    // '/Users/songyiwei/Desktop/debug/20220107/rtk330la_log_2178200286_20220107_145729/user_2022_01_07_14_57_43.bin';
+    const filePath = "/Users/songyiwei/Desktop/debug/20220107/ins401_log_2179000187_20220107_145728/user_2022_01_07_14_57_36.bin";
+    const readStream = fs.createReadStream(filePath);
+    
+    console.time('ethernet parser');
+    
+    readStream.on('data', (buf) => {
+        const result = ethernetParser.receive(buf);
+        // const existItems = result.filter(t => t.packetType === 0x6e4d);
+        // if (existItems && existItems.length > 0) {
+        //     existItems.forEach((item) => {
+        //         console.log(String.fromCharCode(...item.payload));
+        //     })
+        // }
+        //console.log(result);
+        total += result.length;
+    })
+    
+    readStream.on('end', (buf) => {
+        console.log('packet amount', total);
+        console.timeEnd('ethernet parser');
+    })
+}
 
-readStream.on('data', (buf) => {
-    const result = uartParser.receive(buf);
-    // const existItems = result.filter(t => t.packetType === 'nmea');
-    // if (existItems && existItems.length > 0) {
-    //     existItems.forEach((item) => {
-    //         console.log(String.fromCharCode(...item.payload));
-    //     })
-    // }
-    total += result.length;
-})
+testUartParser();
 
-readStream.on('end', (buf) => {
-    console.log('packet amount', total);
-    console.timeEnd('uart parser');
-})
+setTimeout(()=>{
+    testEthernetParser()
+},2000);
