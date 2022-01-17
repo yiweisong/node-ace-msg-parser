@@ -1,6 +1,6 @@
 # Node Aceinna Message Parser
 
-This is a native addon to parse aceinna device message
+This is a native addon to parse Aceinna device message. It helps you to split the binary data to payload by packet type. Do some decode work based on the user manual if you want to know the actual value from Aceinna device.
 
 > You need to have Node 10.5.0 or later installed. 
 
@@ -54,8 +54,8 @@ Receive some buffer data, and parse the result
 | Name | Data Type | Optional | Description |
 | - | - | - | - |
 | key | string | No | A unique key|
-| user | UserOptions | Yes| The options to parse user packet |
-| nmea | NMEAOptions | Yes | The options to parse NMEA packet |
+| user | `UserOptions` | Yes| The options to parse user packet |
+| nmea | `NMEAOptions` | Yes | The options to parse NMEA packet |
 
 ### UserOptions
 | Name | Data Type | Optional | Description |
@@ -73,4 +73,4 @@ A list of parsed result
 | Name | Data Type | Optional | Description |
 | - | - | - | - |
 | packetType | number | No | The packet type. `0x6e4d` is for NMEA packet |
-| payload | string &#166; Buffer | No | The content of parsed packet. User packet is Buffer, and NMEA is string |
+| payload | string or Buffer | No | The content of parsed packet. User packet is Buffer, and NMEA is string |
