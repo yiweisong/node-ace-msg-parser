@@ -1,5 +1,5 @@
 {
-  "name": "node-ace-msg-parser",
+  "name": "ace-msg-parser",
   "version": "1.0.0",
   "main": "lib/binding.js",
   "gypfile": true,

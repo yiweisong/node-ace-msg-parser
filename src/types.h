@@ -4,10 +4,6 @@
 #define USER_PREAMB 0x55
 #define NEAM_HEAD 0x24
 
-#define MAX_NMEA_TYPES 17
-
-
-
 typedef struct
 {
     // user binary

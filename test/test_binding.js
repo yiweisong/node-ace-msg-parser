@@ -59,60 +59,53 @@ const ethernetParser = new parsers.MessageParser({
     }
 });
 
-function testUartParser(){
-    let total = 0;
+function testUartParser() {
+    return new Promise((resolve) => {
+        let total = 0;
 
-    const filePath = '/Users/songyiwei/Desktop/debug/20220107/rtk330la_log_2178200286_20220107_145729/user_2022_01_07_14_57_43.bin'; //path.join(process.cwd(), 'test', 'user.bin');
-    const readStream = fs.createReadStream(filePath);
-    
-    console.time('uart parser');
-    
-    readStream.on('data', (buf) => {
-        const result = uartParser.receive(buf);
-        // const existItems = result.filter(t => t.packetType === 0x6e4d);
-        // if (existItems && existItems.length > 0) {
-        //     existItems.forEach((item) => {
-        //         console.log(String.fromCharCode(...item.payload));
-        //     })
-        // }
-        total += result.length;
-    })
-    
-    readStream.on('end', (buf) => {
-        console.log('packet amount', total);
-        console.timeEnd('uart parser');
-    })
+        const filePath = '/Users/songyiwei/Desktop/debug/20220107/rtk330la_log_2178200286_20220107_145729/user_2022_01_07_14_57_43.bin'; //path.join(process.cwd(), 'test', 'user.bin');
+        const readStream = fs.createReadStream(filePath);
+
+        console.time('uart parser');
+
+        readStream.on('data', (buf) => {
+            const result = uartParser.receive(buf);
+            total += result.length;
+        })
+
+        readStream.on('end', (buf) => {
+            console.log('packet amount', total);
+            console.timeEnd('uart parser');
+            resolve()
+        })
+    });
 }
 
-function testEthernetParser(){
-    let total = 0;
+function testEthernetParser() {
+    return new Promise((resolve) => {
+        let total = 0;
 
-    // '/Users/songyiwei/Desktop/debug/20220107/rtk330la_log_2178200286_20220107_145729/user_2022_01_07_14_57_43.bin';
-    const filePath = "/Users/songyiwei/Desktop/debug/20220107/ins401_log_2179000187_20220107_145728/user_2022_01_07_14_57_36.bin";
-    const readStream = fs.createReadStream(filePath);
-    
-    console.time('ethernet parser');
-    
-    readStream.on('data', (buf) => {
-        const result = ethernetParser.receive(buf);
-        // const existItems = result.filter(t => t.packetType === 0x6e4d);
-        // if (existItems && existItems.length > 0) {
-        //     existItems.forEach((item) => {
-        //         console.log(String.fromCharCode(...item.payload));
-        //     })
-        // }
-        //console.log(result);
-        total += result.length;
-    })
-    
-    readStream.on('end', (buf) => {
-        console.log('packet amount', total);
-        console.timeEnd('ethernet parser');
-    })
+        // '/Users/songyiwei/Desktop/debug/20220107/rtk330la_log_2178200286_20220107_145729/user_2022_01_07_14_57_43.bin';
+        const filePath = "/Users/songyiwei/Desktop/debug/20220107/ins401_log_2179000187_20220107_145728/user_2022_01_07_14_57_36.bin";
+        const readStream = fs.createReadStream(filePath);
+
+        console.time('ethernet parser');
+
+        readStream.on('data', (buf) => {
+            const result = ethernetParser.receive(buf);
+            total += result.length;
+        })
+
+        readStream.on('end', (buf) => {
+            console.log('packet amount', total);
+            console.timeEnd('ethernet parser');
+            resolve();
+        })
+    });
 }
 
-testUartParser();
+// Run sequence
+//1. uart parser
+//2. ethernet parser
+testUartParser().then(() => { return testEthernetParser() });
 
-setTimeout(()=>{
-    testEthernetParser()
-},2000);

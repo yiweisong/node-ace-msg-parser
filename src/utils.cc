@@ -31,10 +31,3 @@ int is_nmea_char(char c)
 	}
 	return 0;
 }
-
-const char* NMEATypeList[MAX_NMEA_TYPES] = { "$GPGGA","$GNGGA", "$GPRMC", "$GNRMC", "$GPGSV", "$GLGSV", "$GAGSV", "$BDGSV", "$GPGSA", "$GLGSA", "$GAGSA", "$BDGSA", "$GPZDA", "$GNZDA", "$GPVTG", "$PASHR", "$GNINS" };
-
-const char * nmea_type(int index)
-{
-	return NMEATypeList[index];
-}
