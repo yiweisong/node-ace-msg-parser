@@ -202,22 +202,6 @@ int MessageParser::_parse_nmea(uint8_t data) {
     return ret;
 }
 
-int MessageParser::_parse_user_packet_payload(uint8_t* buff, uint32_t nbyte){
-    int ret = 1;
-
-    // uint8_t payload_length = buff[2];
-    // char packetType[4];
-    // uint8_t payload[payload_length];
-
-    // memcpy(packetType, buff, 2);
-    // memcpy(payload, buff + 3, payload_length);
-    
-    // _currentPacket.packet_type = packetType;
-    // _currentPacket.payload_len = payload_length;
-
-    return ret;
-}
-
 int MessageParser::_accept(uint8_t data){
     int ret = 0;
     if (_parseStatus.binary_flag == 0) {

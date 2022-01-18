@@ -61,12 +61,12 @@ Receive some buffer data, and parse the result
 | Name | Data Type | Optional | Description |
 | - | - | - | - |
 | allows | number[] | No | Only data with packet type in the list could be pared |
-| packetLengthType | string | No | The packet length type of user packet |
+| packetLengthType | string | No | The packet length type of user packet, `uint8` or `uint32` |
 
 ### NMEAOptions
 | Name | Data Type | Optional | Description |
 | - | - | - | - |
-| allows | number[] | No | Only data with NMEA type in the list could be pared |
+| allows | string[] | No | Only data with NMEA type in the list could be pared |
 
 ### ResultList
 A list of parsed result
