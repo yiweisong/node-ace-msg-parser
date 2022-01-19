@@ -264,7 +264,7 @@ int MessageParser::_accept(uint8_t data){
                     ret = 1;
                 } else{
                     //TODO: collect crc error
-                    printf("crc error %d\n", _parseStatus.binary_packet_type);
+                    std::cerr<<"crc error "<< _parseStatus.binary_packet_type<<" "<<_parseStatus.binary_payload_len<<std::endl;
                 }
                 _parseStatus.binary_flag = 0;
                 _parseStatus.binary_msg_read_index = 0;
@@ -284,21 +284,18 @@ bool MessageParser::_can_calc_binary_payload_len()
         uint8_t startIndex = 4;
         for(int i = 0; i < _parseStatus.binary_packet_len_type; i++)
         {
-            uint8_t partLen = _parseStatus.binary_msg_buff[startIndex+i];
-            _parseStatus.binary_payload_len += base*partLen;
             if(i == 0)
             {
                 base = 1;
-            }
-            else if(i == 1)
-            {
-                base = 256;
             }
             else
             {
                 base *= 256;
             }
+            uint8_t partLen = _parseStatus.binary_msg_buff[startIndex+i];
+            _parseStatus.binary_payload_len += base*partLen;
         }
+        //printf("%d %d\n",_parseStatus.binary_packet_type ,_parseStatus.binary_payload_len);
     }
 
     return can_calc;
