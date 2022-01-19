@@ -188,8 +188,8 @@ int MessageParser::_parse_nmea(uint8_t data) {
             _parseStatus.nmea_msg_buff[_parseStatus.nmea_msg_len++] = data;
         }
         else {
-            _parseStatus.nmea_msg_buff[_parseStatus.nmea_msg_len++] = 0x0A;
-            _parseStatus.nmea_msg_buff[_parseStatus.nmea_msg_len++] = 0;
+            _parseStatus.nmea_msg_buff[_parseStatus.nmea_msg_len++] = 0x0d;
+            _parseStatus.nmea_msg_buff[_parseStatus.nmea_msg_len++] = 0x0a;
             _parseStatus.nmea_flag = 0;
 
             //char packetType[5] = "nmea";
