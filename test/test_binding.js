@@ -29,6 +29,11 @@ const uartParser = new parsers.MessageParser({
             0x664d, //fM,
             0x7274, //rt,
             0x7350, //sP
+
+            0x6731, //g1
+            0x6931, //i1
+            0x6f31, //o1
+            0x7931, //y1
         ],
         packetLengthType: 'uint8',
     },
