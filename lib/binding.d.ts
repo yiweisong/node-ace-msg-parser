@@ -12,13 +12,14 @@ export class MessageParser {
 /*~ If you want to expose types from your module as well, you can
  *~ place them in this block.
  */
- export namespace MessageParser {
+export namespace MessageParser {
   type PacketLengthType = 'uint8' | 'uint32'
 
   export interface Options {
     key: string;
     user: UserOptions;
     nmea?: NMEAOptions;
+    skipCheckCRC?: boolean;
   }
 
   export interface UserOptions {

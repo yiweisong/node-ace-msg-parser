@@ -39,7 +39,8 @@ const uartParser = new parsers.MessageParser({
     },
     nmea: {
         allows: allowedNMEATypes
-    }
+    },
+    skipCheckCRC: true
 });
 
 const ethernetParser = new parsers.MessageParser({
@@ -61,7 +62,8 @@ const ethernetParser = new parsers.MessageParser({
     },
     nmea: {
         allows: allowedNMEATypes,
-    }
+    },
+    skipCheckCRC: true
 });
 
 function testUartParser() {

@@ -27,8 +27,8 @@ MessageParser::MessageParser(const Napi::CallbackInfo &info)
     this->_reset();
     
     Napi::Object options = info[0].As<Napi::Object>();
-    if(options.Has("uart-parser-key")){
-        this->_key = options.Get("uart-parser-key").As<Napi::String>().Utf8Value();
+    if(options.Has("key")){
+        this->_key = options.Get("key").As<Napi::String>().Utf8Value();
     }
     
     if(options.Has("user")){
@@ -82,7 +82,13 @@ MessageParser::MessageParser(const Napi::CallbackInfo &info)
             }
             this->_allowedNMEAsLength=allowedPacketsLength;
         }
-    }    
+    }
+
+    if(options.Has("skipCheckCRC")){
+        this->_skipCheckCRC = options.Get("skipCheckCRC").As<Napi::Boolean>().Value();
+    }else{
+        this->_skipCheckCRC = false;
+    }
 }
 
 Napi::Value MessageParser::Receive(const Napi::CallbackInfo &info)
@@ -255,16 +261,24 @@ int MessageParser::_accept(uint8_t data){
         {
             if (_parseStatus.binary_msg_read_index == _parseStatus.binary_payload_len + _parseStatus.binary_wrapper_len) 
             {
-                uint16_t packet_crc = 256 * _parseStatus.binary_msg_buff[_parseStatus.binary_msg_read_index - 2] 
-                    + _parseStatus.binary_msg_buff[_parseStatus.binary_msg_read_index - 1];
-                // skip preamble
-                uint8_t *skipPreambleMsgBuff = _parseStatus.binary_msg_buff;
-                if (packet_crc == calc_crc(skipPreambleMsgBuff + 2, _parseStatus.binary_msg_read_index - 4)) {
+                if(this->_skipCheckCRC)
+                {
                     _currentPacket.binary_msg_len = _parseStatus.binary_msg_read_index;
                     ret = 1;
-                } else{
-                    //TODO: collect crc error
-                    std::cerr<<"crc error "<< _parseStatus.binary_packet_type<<" "<<_parseStatus.binary_payload_len<<std::endl;
+                }
+                else
+                {
+                    uint16_t packet_crc = 256 * _parseStatus.binary_msg_buff[_parseStatus.binary_msg_read_index - 2] 
+                        + _parseStatus.binary_msg_buff[_parseStatus.binary_msg_read_index - 1];
+                    // skip preamble
+                    uint8_t *skipPreambleMsgBuff = _parseStatus.binary_msg_buff;
+                    if (packet_crc == calc_crc(skipPreambleMsgBuff + 2, _parseStatus.binary_msg_read_index - 4)) {
+                        _currentPacket.binary_msg_len = _parseStatus.binary_msg_read_index;
+                        ret = 1;
+                    } else{
+                        //TODO: collect crc error
+                        //std::cerr<<"crc error "<< _parseStatus.binary_packet_type<<" "<<_parseStatus.binary_payload_len<<std::endl;
+                    }
                 }
                 _parseStatus.binary_flag = 0;
                 _parseStatus.binary_msg_read_index = 0;

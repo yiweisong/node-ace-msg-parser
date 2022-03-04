@@ -14,6 +14,7 @@ class MessageParser : public Napi::ObjectWrap<MessageParser> {
   private:
     int _allowedPacketsLength;
     int _allowedNMEAsLength;
+    bool _skipCheckCRC;
 
     std::string _key;
     std::vector<uint16_t> _allowedUserPacketsTypeList;
