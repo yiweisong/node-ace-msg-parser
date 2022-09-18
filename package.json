@@ -1,6 +1,6 @@
 {
   "name": "ace-msg-parser",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "A node native add-on for Aceinna device message parser",
   "main": "lib/binding.js",
   "gypfile": true,
