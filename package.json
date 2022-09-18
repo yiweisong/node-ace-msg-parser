@@ -6,6 +6,7 @@
   "gypfile": true,
   "license": "MIT",
   "scripts": {
+    "install": "node-gyp rebuild",
     "test": "node --napi-modules ./test/test_binding.js"
   },
   "dependencies": {

@@ -241,8 +241,29 @@ int MessageParser::_accept(uint8_t data){
 					break;
 				}
 			}
-
             _parseStatus.binary_msg_read_index = _parseStatus.binary_flag ? 4 : 0;
+
+            //move binary_msg_read_index to previous. check preamb, if match continue,else move again, until to 0
+            if(_parseStatus.binary_flag){
+                _parseStatus.binary_msg_read_index=4;
+            }else{
+                //move_binary_msg_read_index
+                if(_parseStatus.binary_msg_header[1]==USER_PREAMB && _parseStatus.binary_msg_header[2]==USER_PREAMB){
+                    _parseStatus.binary_msg_header[0]=_parseStatus.binary_msg_header[1];
+                    _parseStatus.binary_msg_header[1]=_parseStatus.binary_msg_header[2];
+                    _parseStatus.binary_msg_header[2]=_parseStatus.binary_msg_header[3];
+                    _parseStatus.binary_msg_read_index=3;
+                }
+
+                else if(_parseStatus.binary_msg_header[2]==USER_PREAMB && _parseStatus.binary_msg_header[3]==USER_PREAMB){
+                    _parseStatus.binary_msg_header[0]=_parseStatus.binary_msg_header[2];
+                    _parseStatus.binary_msg_header[1]=_parseStatus.binary_msg_header[3];
+                    _parseStatus.binary_msg_read_index=2;
+                }
+                else{
+                    _parseStatus.binary_msg_read_index=0;
+                }
+            }
 		}
 		ret = _parse_nmea(data);
 	}
@@ -277,7 +298,11 @@ int MessageParser::_accept(uint8_t data){
                         ret = 1;
                     } else{
                         //TODO: collect crc error
-                        //std::cerr<<"crc error "<< _parseStatus.binary_packet_type<<" "<<_parseStatus.binary_payload_len<<std::endl;
+                        std::cerr<<"crc error "<< _parseStatus.binary_packet_type<<" "<<_parseStatus.binary_payload_len<<std::endl;
+                        // for(int i=0;i<_parseStatus.binary_msg_read_index;i++){
+                        //     printf("%d ",_parseStatus.binary_msg_buff[i]);
+                        // }
+                        // printf("\n");
                     }
                 }
                 _parseStatus.binary_flag = 0;
