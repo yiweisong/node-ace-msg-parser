@@ -4,7 +4,7 @@
   "description": "A node native add-on for Aceinna device message parser",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "private": true,
+  "private": false,
   "gypfile": true,
   "license": "MIT",
   "scripts": {
