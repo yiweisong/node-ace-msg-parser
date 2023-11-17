@@ -55,7 +55,13 @@ MessageParser::MessageParser(const Napi::CallbackInfo &info)
                 _parseStatus.binary_packet_len_type = 1;
                 // 2 preamble + 2 packet type + 1 packet len + 2 crc
                 _parseStatus.binary_wrapper_len = 7;
-            } 
+            }
+            else if(packetLengthType == "uint16")
+            {
+                _parseStatus.binary_packet_len_type = 2;
+                // 2 preamble + 2 packet type + 1 packet len + 2 crc
+                _parseStatus.binary_wrapper_len = 10;
+            }
             else if(packetLengthType == "uint32")
             {
                 _parseStatus.binary_packet_len_type = 4;
@@ -270,7 +276,7 @@ int MessageParser::_accept(uint8_t data){
 	else {
 		_parseStatus.binary_msg_buff[_parseStatus.binary_msg_read_index++] = data;
         
-        if(_parseStatus.binary_flag == 1)
+        if(_parseStatus.binary_flag == 1) //found packet type
         {
             if(this->_can_calc_binary_payload_len())
             {
@@ -278,7 +284,7 @@ int MessageParser::_accept(uint8_t data){
             }
         }
 
-        if(_parseStatus.binary_flag == 2)
+        if(_parseStatus.binary_flag == 2) //can collect payload
         {
             if (_parseStatus.binary_msg_read_index == _parseStatus.binary_payload_len + _parseStatus.binary_wrapper_len) 
             {

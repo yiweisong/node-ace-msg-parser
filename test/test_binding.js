@@ -1,4 +1,4 @@
-const parsers = require("../lib/binding.js");
+const parsers = require("../dist/index");
 const fs = require("fs");
 const path = require("path");
 // const assert = require("assert");

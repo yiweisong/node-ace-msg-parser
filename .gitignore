@@ -1,10 +1,10 @@
+dist/
 build/
 node_modules/
 Debug/
 Release/
 *.lock
 *.log
-package-lock.json
 npm-debug.log*
 
 .idea/
@@ -12,3 +12,4 @@ npm-debug.log*
 .DS_Store
 
 */*.bin
+prebuilds/

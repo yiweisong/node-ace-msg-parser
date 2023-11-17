@@ -2,15 +2,29 @@
   "name": "ace-msg-parser",
   "version": "1.0.6",
   "description": "A node native add-on for Aceinna device message parser",
-  "main": "lib/binding.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "private": true,
   "gypfile": true,
   "license": "MIT",
   "scripts": {
-    "install": "node-gyp rebuild",
-    "test": "node --napi-modules ./test/test_binding.js"
+    "test": "node --napi-modules ./test/test_binding.js",
+    "build": "rm -rf dist && tsc -p tsconfig-build.json",
+    "install": "node-gyp-build",
+    "prebuildify": "prebuildify --napi --target 14.0.0 --force --strip --verbose",
+    "semantic-release": "semantic-release",
+    "rebuild": "node-gyp rebuild"
   },
   "dependencies": {
-    "@types/node": "^17.0.9",
-    "node-addon-api": "^4.2.0"
+    "node-addon-api": "^7.0.0",
+    "node-gyp-build": "^4.6.1"
+  },
+  "devDependencies": {
+    "@semantic-release/exec": "^6.0.3",
+    "@types/node": "^20.9.1",
+    "node-gyp": "^9.4.0",
+    "prebuildify": "^5.0.1",
+    "semantic-release": "^19.0.2",
+    "typescript": "^5.2.2"
   }
 }

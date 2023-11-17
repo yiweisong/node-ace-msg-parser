@@ -1,7 +1,7 @@
 {
   'targets': [
     {
-      'target_name': 'node-ace-msg-parser',
+      'target_name': 'ace-msg-parser',
       'sources': [ 
         'src/addon.cc',
         'src/utils.cc',
