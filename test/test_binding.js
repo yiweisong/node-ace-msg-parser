@@ -58,7 +58,7 @@ const ethernetParser = new parsers.MessageParser({
             0x444d, //check
             0x4967, //gnss integrity
         ],
-        packetLengthType: 'uint32',
+        packetLengthType: 'uint16',
     },
     nmea: {
         allows: allowedNMEATypes,
