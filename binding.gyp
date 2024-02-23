@@ -5,7 +5,9 @@
       'sources': [ 
         'src/addon.cc',
         'src/utils.cc',
-        'src/message_parser.cc',
+        'src/message_extractor.cc',
+        'src/analyzers/nmea_analyzer.cc',
+        'src/analyzers/aceinna_binary_analyzer.cc',
       ],
       'include_dirs': ["<!@(node -p \"require('node-addon-api').include\")"],
       'dependencies': ["<!(node -p \"require('node-addon-api').gyp\")"],

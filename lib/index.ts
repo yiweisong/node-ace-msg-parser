@@ -3,7 +3,7 @@ import { join } from 'path'
 
 const binding = nodeGypBuild(join(__dirname, '../')) as any;
 
-const BindingMessageParser = binding.MessageParser
+const BindingMessageParser = binding.MessageExtractor
 
 /*~ Write your module's methods and properties in this class */
 export class MessageParser {
@@ -26,21 +26,25 @@ export type PacketLengthType = 'uint8' | 'uint16' | 'uint32'
 
 export interface Options {
   key: string;
-  user: UserOptions;
-  nmea?: NMEAOptions;
+  messages: MessageFormat[];
+}
+
+export interface AllowPacketTypeOptions {
+  id: number;
+  name: string;
+  raw: number[];
+}
+
+export interface MessageFormat {
+  format: string;
+  allowPacketTypes: AllowPacketTypeOptions[];
   skipCheckCRC?: boolean;
 }
 
-export interface UserOptions {
-  allows: number[];
-  packetLengthType: PacketLengthType;
-}
-
-export interface NMEAOptions {
-  allows: string[];
-}
-
 export interface ResultList {
-  packetType: number;
-  payload: Buffer | string;
+  packetTypeId: number;
+  message: Buffer | string;
+  length: number;
+  payloadOffset: number;
+  payloadLen: number;
 }
