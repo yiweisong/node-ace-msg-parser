@@ -44,7 +44,6 @@ export interface MessageFormat {
 export interface ResultList {
   packetTypeId: number;
   message: Buffer | string;
-  length: number;
   payloadOffset: number;
   payloadLen: number;
 }

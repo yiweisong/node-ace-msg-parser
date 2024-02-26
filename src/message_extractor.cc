@@ -47,7 +47,7 @@ namespace Aceinna {
             packetTypes.push_back({id, name, rawPacketType});
           }
           
-          bool skipCheckCRC = messageFormat.Has("skipCheckCRC") ? messageFormat.Get("skipCheckCRC").As<Napi::Boolean>().Value() : false;
+          bool skipCheckCRC = messageFormat.Has("skipCheckCRC") ? messageFormat.Get("skipCheckCRC").As<Napi::Boolean>().Value() : true;
 
           if (format == FORMAT_ACEINNA_BINARY_V1 || format == FORMAT_ACEINNA_BINARY_V2 || format == FORMAT_ACEINNA_BINARY_V3)
           {
@@ -80,18 +80,23 @@ namespace Aceinna {
     Napi::Buffer<char> buf = info[0].As<Napi::Buffer<char>>();
     size_t actualSize = buf.Length();
     size_t read_index = 0;
-    uint8_t* actualData = (uint8_t*)buf.Data();
+    size_t extracted_index = 0;
+    //uint8_t* data = (uint8_t*)buf.Data();
     bool resizeActualData = false;
-
+    
     if (m_unparsedDataSize > 0)
     {
         resizeActualData = true;
-        actualData = (uint8_t*)malloc(m_unparsedDataSize + actualSize);
-        memcpy(actualData, m_unparsedData, m_unparsedDataSize);
-        memcpy(actualData + m_unparsedDataSize, buf.Data(), actualSize);
+        //actualData = new uint8_t[m_unparsedDataSize+actualSize];// (uint8_t*)malloc(m_unparsedDataSize + actualSize);
+        memcpy(m_actualData, m_unparsedData, m_unparsedDataSize);
+        memcpy(m_actualData + m_unparsedDataSize, buf.Data(), actualSize);
         actualSize += m_unparsedDataSize;
     }
-    //printf("%d %d\n", m_analysisResult.status,read_index);
+    else{
+        //printf("11 actual size %zu \n", actualSize);  
+        memcpy(m_actualData, buf.Data(), actualSize);
+        //m_actualData = buf.Data();
+    }
     while (read_index < actualSize)
     {
       //if determining, send data bytes to analyzers one by one
@@ -99,7 +104,7 @@ namespace Aceinna {
       {
         for (size_t i = 0; i < m_messageAnalyzers.size(); i++)
         {
-          m_messageAnalyzers[i]->determine(actualData[read_index], m_analysisResult);
+          m_messageAnalyzers[i]->determine(m_actualData[read_index], m_analysisResult);
           
           if (m_analysisResult.status == AnalysisStatus::DETERMINED)
           {
@@ -116,12 +121,13 @@ namespace Aceinna {
       {
         size_t left_size = actualSize - read_index;
         //required to invoke determined analyzer's canExtract before extract data
-        bool can_extract = m_messageAnalyzers[m_determinedIndex]->canExtract(actualData + read_index, left_size);
+        bool can_extract = m_messageAnalyzers[m_determinedIndex]->canExtract(m_actualData + read_index, left_size);
 
         if(can_extract){
-          m_messageAnalyzers[m_determinedIndex]->extract(actualData + read_index, left_size, m_analysisResult);
-          _handle_extracted_data(env, list);
+          m_messageAnalyzers[m_determinedIndex]->extract(m_actualData + read_index, left_size, m_analysisResult);
+          _handle_extracted_data(env, list, extracted_index);
           _clear_cross_status();
+          extracted_index++;
         }else{
           m_needCross = true;
           m_crossStart = read_index;
@@ -134,13 +140,14 @@ namespace Aceinna {
     //printf("%d %d %d\n", m_analysisResult.status,read_index,actualData[0]);
     
     if(m_needCross && m_crossSize > 0){
-      m_unparsedData = (uint8_t*)malloc(m_crossSize);
+      //m_unparsedData = new uint8_t[m_crossSize]; //(uint8_t*)malloc(m_crossSize);
       m_unparsedDataSize = m_crossSize;
-      memcpy(m_unparsedData, actualData + m_crossStart, m_crossSize);
+      memcpy(m_unparsedData, m_actualData + m_crossStart, m_crossSize);
     }
 
     if(resizeActualData){
-      free(actualData);
+      //free(actualData);
+      //delete[] actualData;
     }
 
     return list;
@@ -153,19 +160,21 @@ namespace Aceinna {
     _clear_unparsed_data();
   }
 
-  void MessageExtractor::_handle_extracted_data(Napi::Env &env, Napi::Array &list)
+  void MessageExtractor::_handle_extracted_data(Napi::Env &env, Napi::Array &list, size_t index)
   {
-    Napi::Object obj = Napi::Object::New(env);
+    Napi::Object packet = Napi::Object::New(env);
+
     //fill the parsed result to list
     switch(m_analysisResult.status){
       case AnalysisStatus::DONE:
-        obj.Set("packetTypeId", m_analysisResult.packet_type_id);
-        //obj.Set("counter", m_analysisResult.counter);
-        obj.Set("message", Napi::Buffer<uint8_t>::Copy(env, m_analysisResult.data, m_analysisResult.length));
-        obj.Set("length", m_analysisResult.length);
-        obj.Set("payloadOffset", m_analysisResult.payload_offset);
-        obj.Set("payloadLen", m_analysisResult.payload_len);
-        list.Set(list.Length(), obj);
+        packet.Set("packetTypeId", m_analysisResult.packet_type_id);
+        // packet.Set("counter", m_analysisResult.counter);
+        packet.Set("message", Napi::Buffer<uint8_t>::Copy(env, m_analysisResult.data, m_analysisResult.length));
+        //packet.Set("length", m_analysisResult.length);
+        packet.Set("payloadOffset", m_analysisResult.payload_offset);
+        packet.Set("payloadLen", m_analysisResult.payload_len);
+        
+        list[index] = packet;
         _reset_message_analyzers();
         _clear_unparsed_data();
         break;
@@ -214,10 +223,11 @@ namespace Aceinna {
       m_unparsedDataSize = 0;
     }
 
-    if(m_unparsedData != nullptr){
-      free(m_unparsedData);
-      m_unparsedData = nullptr;
-    }
+    //if(m_unparsedData != nullptr){
+      //free(m_unparsedData);
+      //delete m_unparsedData;
+      //m_unparsedData = nullptr;
+    //}
   }
 
   void MessageExtractor::Init(Napi::Env env, Napi::Object exports)

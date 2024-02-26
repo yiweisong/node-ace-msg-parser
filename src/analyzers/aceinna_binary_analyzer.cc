@@ -99,7 +99,7 @@ namespace Aceinna
 
       uint8_t payload_len = data[0];
 
-      if (data_size < (size_t)payload_len + (size_t)m_processStatus.wrapper_len)
+      if (data_size < (size_t)payload_len + (size_t)m_processStatus.wrapper_len - 4)
       {
         return false;
       }
@@ -117,7 +117,7 @@ namespace Aceinna
 
       uint32_t payload_len = data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24);
 
-      if (data_size < (size_t)payload_len + (size_t)m_processStatus.wrapper_len)
+      if (data_size < (size_t)payload_len + (size_t)m_processStatus.wrapper_len - 4)
       {
         return false;
       }
@@ -135,7 +135,7 @@ namespace Aceinna
 
       uint16_t payload_len = data[0] | (data[1] << 8);
 
-      if (data_size < (size_t)payload_len + (size_t)m_processStatus.wrapper_len)
+      if (data_size < (size_t)payload_len + (size_t)m_processStatus.wrapper_len - 4)
       {
         return false;
       }
@@ -150,8 +150,8 @@ namespace Aceinna
   void AceinnaBinaryMessageAnalyzer::extract(uint8_t* data, size_t data_size, AnalysisResult& analysis_result)
   {
     uint16_t whole_packet_len = m_processStatus.payload_len + m_processStatus.wrapper_len;
-    memcpy(m_processStatus.msg_buff, m_processStatus.msg_header, 4);
-    memcpy(m_processStatus.msg_buff + 4, data, whole_packet_len);
+    memcpy(m_processStatus.msg_buff, m_processStatus.msg_header, m_processStatus.msg_read_index);
+    memcpy(m_processStatus.msg_buff + 4, data, whole_packet_len - m_processStatus.msg_read_index);
 
     if(m_skipCRC)
     {
