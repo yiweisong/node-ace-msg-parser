@@ -24,6 +24,8 @@
     }
   ],
   'variables': {
-    'openssl_fips': ''
+    'openssl_fips': '',
+    'openssl_is_fips': 'false',
+    'openssl_quic': 'true',
   }
 }
