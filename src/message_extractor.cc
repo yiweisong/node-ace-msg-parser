@@ -1,5 +1,6 @@
 #include "types.h"
 #include "message_extractor.h"
+#include <string.h>
 
 namespace Aceinna {
   MessageExtractor::MessageExtractor(const Napi::CallbackInfo &info)
