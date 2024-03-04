@@ -1,5 +1,6 @@
 #include "../utils.h"
 #include "message_analyzer.h"
+#include <string.h>
 
 namespace Aceinna
 {
