@@ -20,6 +20,9 @@
       },
       'msvs_settings': {
         'VCCLCompilerTool': { 'ExceptionHandling': 1 },
+      },
+      'variables': {
+          'openssl_fips': ''
       }
     }
   ]
