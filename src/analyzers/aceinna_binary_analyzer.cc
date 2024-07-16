@@ -159,7 +159,7 @@ namespace Aceinna
     {
       //fill analysis_result with DONE, consider refactor as inline function
       analysis_result.status = AnalysisStatus::DONE;
-      analysis_result.format_id = m_processStatus.format_id;
+      //analysis_result.format_id = m_processStatus.format_id;
       analysis_result.data = m_processStatus.msg_buff;
       analysis_result.length = whole_packet_len;
       analysis_result.payload_offset = m_processStatus.payload_offset;
@@ -173,7 +173,7 @@ namespace Aceinna
       {
         //fill analysis_result with DONE, consider refactor as inline function
         analysis_result.status = AnalysisStatus::DONE;
-        analysis_result.format_id = m_processStatus.format_id;
+        //analysis_result.format_id = m_processStatus.format_id;
         analysis_result.data = m_processStatus.msg_buff;
         analysis_result.length = whole_packet_len;
         analysis_result.payload_offset = m_processStatus.payload_offset;
@@ -184,7 +184,7 @@ namespace Aceinna
       else
       {
         analysis_result.status = AnalysisStatus::CRC_ERROR;
-        analysis_result.format_id = m_processStatus.format_id;
+        //analysis_result.format_id = m_processStatus.format_id;
         analysis_result.data = m_processStatus.msg_buff;
         analysis_result.length = whole_packet_len;
         //fill analysis_result with CRC ERROR

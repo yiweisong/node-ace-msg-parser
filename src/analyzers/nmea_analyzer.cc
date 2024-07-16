@@ -94,14 +94,14 @@ namespace Aceinna
           m_processStatus.nmea[m_processStatus.read_index++] = byte_data;
         }
         else {
-          m_processStatus.nmea[m_processStatus.read_index++] = 0x0A;
-          m_processStatus.nmea[m_processStatus.read_index++] = 0;
+          m_processStatus.nmea[m_processStatus.read_index++] = 0x0d;
+          m_processStatus.nmea[m_processStatus.read_index++] = 0x0a;
           m_processStatus.flag = 0;
           //_parseStatus.read_index = 0;
 
           analysis_result.status = AnalysisStatus::DONE;
           //analysis_result.packet_type = m_processStatus.packet_type;
-          analysis_result.format_id = 0;
+          //analysis_result.format_id = 0;
           analysis_result.data = m_processStatus.nmea;
           analysis_result.length = m_processStatus.read_index;
           analysis_result.read_size = m_processStatus.read_index - NMEA_PACKET_TYPE_LENGTH;

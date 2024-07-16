@@ -57,6 +57,21 @@ const INS401EthernetFormat = {
     ]
 };
 
+const INS502NextFormat = {
+    format: 'AceinnaBinaryV3', allowPacketTypes: [
+        { id: 0x4e49, name: 'IN', raw: [0x49, 0x4e] },
+        { id: 0x3253, name: 'S2', raw: [0x53, 0x32] },
+        { id: 0x4e47, name: 'GN', raw: [0x47, 0x4e] },
+        { id: 0x5252, name: 'RR', raw: [0x52, 0x52] },
+        { id: 0x314f, name: 'ODO', raw: [0x4f, 0x31] },
+        { id: 0x4d44, name: 'DIAGNOSTIC', raw: [0x44, 0x4d] },
+        { id: 0x5348, name: 'HS', raw: [0x48, 0x53] },
+        { id: 0x5249, name: 'IR', raw: [0x49, 0x52] },
+        { id: 0x4949, name: 'II', raw: [0x49, 0x49] },
+        { id: 0x4947, name: 'GI', raw: [0x47, 0x49] },
+    ]
+}
+
 const buildDataAnalyzer = (key, messageFormats) => {
     return new parsers.MessageParser({
         key,
@@ -156,10 +171,15 @@ function testAnalyzer(analyzer, filePath, index) {
 const analyzers = [];
 const rtk330laDataFile = '/Users/songyiwei/Desktop/debug/20220107/rtk330la_log_2178200286_20220107_145729/user_2022_01_07_14_57_43.bin';
 const ins401DataFile = '/Users/songyiwei/Desktop/debug/20220107/ins401_log_2179000187_20220107_145728/user_2022_01_07_14_57_36.bin';
-for (let i = 0; i < 1; i++) {
-    const analyzer = buildDataAnalyzer(`uart-parser-${i}`, [NMEAFormat, RTK330LAUartFormat]);
-    testAnalyzer(analyzer, rtk330laDataFile, i).then(res=>console.log('uart-parser done'));
-}
+const ins502nextDataFile = '/Users/songyiwei/Desktop/debug/20240627/raw_2024_06_27_09_24_02.bin';
+
+const analyzer = buildDataAnalyzer(`ins502-next-parser`, [NMEAFormat,INS502NextFormat]);
+testAnalyzer(analyzer, ins502nextDataFile, 0).then(res=>console.log('parser done'));
+
+// for (let i = 0; i < 1; i++) {
+//     const analyzer = buildDataAnalyzer(`uart-parser-${i}`, [NMEAFormat, RTK330LAUartFormat]);
+//     testAnalyzer(analyzer, rtk330laDataFile, i).then(res=>console.log('uart-parser done'));
+// }
 
 // for (let i = 0; i < 1; i++) {
 //     const analyzer = buildDataAnalyzer(`ethernet-parser-${i}`, [NMEAFormat, INS401EthernetFormat]);
