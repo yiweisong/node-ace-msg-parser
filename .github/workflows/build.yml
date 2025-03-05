@@ -12,7 +12,7 @@ jobs:
       matrix:
         include:
           - name: darwin
-            os: macos-12
+            os: macos-latest
             node: x64
             command: prebuildify
           - name: win32-x64
