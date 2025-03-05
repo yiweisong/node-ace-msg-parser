@@ -12,6 +12,7 @@ namespace Aceinna {
     const static std::string FORMAT_ACEINNA_BINARY_V1 = "AceinnaBinaryV1";
     const static std::string FORMAT_ACEINNA_BINARY_V2 = "AceinnaBinaryV2";
     const static std::string FORMAT_ACEINNA_BINARY_V3 = "AceinnaBinaryV3";
+    const static std::string FORMAT_ACEINNA_BINARY_V4 = "AceinnaBinaryV4";
 
     enum class MessageFormat : uint8_t{
         NMEA,

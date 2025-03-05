@@ -36,6 +36,14 @@ namespace Aceinna
       m_processStatus.payload_offset = 8;
     }
 
+    if (m_format == FORMAT_ACEINNA_BINARY_V4)
+    {
+      m_processStatus.format_id = 4;
+      m_processStatus.packet_len_type = 2;
+      m_processStatus.wrapper_len = 8;
+      m_processStatus.payload_offset = 6;
+    }
+
     for(auto& item: allow_packet_types){
       m_allowPacketTypeIds.push_back(item.id);
     }
@@ -112,7 +120,7 @@ namespace Aceinna
 
     if (m_format == FORMAT_ACEINNA_BINARY_V2)
     {
-      if (data_size < 4)
+      if (data_size < 4) // 4 bytes for payload length
       {
         return false;
       }
@@ -130,7 +138,7 @@ namespace Aceinna
 
     if (m_format == FORMAT_ACEINNA_BINARY_V3)
     {
-      if (data_size < 4)
+      if (data_size < 4) // 2 bytes for payload length, 2 bytes for counter
       {
         return false;
       }
@@ -143,6 +151,22 @@ namespace Aceinna
       }
       m_processStatus.payload_len = payload_len;
       m_processStatus.counter = data[2] | (data[3] << 8);
+      return true;
+    }
+
+    if (m_format == FORMAT_ACEINNA_BINARY_V4)
+    {
+      if (data_size < 2) // 2 bytes for payload length
+      {
+        return false;
+      }
+      uint16_t payload_len = data[0] | (data[1] << 8);
+
+      if (data_size < (size_t)payload_len + (size_t)m_processStatus.wrapper_len - 4)
+      {
+        return false;
+      }
+      m_processStatus.payload_len = payload_len;
       return true;
     }
 
@@ -169,7 +193,7 @@ namespace Aceinna
     } else {
       uint16_t packet_crc = m_processStatus.msg_buff[whole_packet_len - 1] | (m_processStatus.msg_buff[whole_packet_len - 2] << 8);
     
-      if(packet_crc == calc_crc(m_processStatus.msg_buff + 2, whole_packet_len - 4))
+      if(packet_crc == calc_crc(m_processStatus.msg_buff + 2, whole_packet_len - 4)) //caculate crc skip preamble, and size decrease preamble and crc
       {
         //fill analysis_result with DONE, consider refactor as inline function
         analysis_result.status = AnalysisStatus::DONE;

@@ -50,7 +50,7 @@ namespace Aceinna {
           
           bool skipCheckCRC = messageFormat.Has("skipCheckCRC") ? messageFormat.Get("skipCheckCRC").As<Napi::Boolean>().Value() : true;
 
-          if (format == FORMAT_ACEINNA_BINARY_V1 || format == FORMAT_ACEINNA_BINARY_V2 || format == FORMAT_ACEINNA_BINARY_V3)
+          if (format == FORMAT_ACEINNA_BINARY_V1 || format == FORMAT_ACEINNA_BINARY_V2 || format == FORMAT_ACEINNA_BINARY_V3 || format == FORMAT_ACEINNA_BINARY_V4)
           {
             m_messageAnalyzers.push_back(std::make_shared<AceinnaBinaryMessageAnalyzer>(format, packetTypes, skipCheckCRC));
           }
