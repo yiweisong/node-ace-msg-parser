@@ -28,7 +28,7 @@ jobs:
           node-version: 16.x
           architecture: ${{ matrix.node }}
       - uses: actions/checkout@v3
-      - run: python3 -m myenv
+      - run: python3 -m venv myenv
       - run: source myenv/bin/activate
       - run: pip install setuptools
       - run: npm ci
