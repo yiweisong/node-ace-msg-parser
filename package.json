@@ -10,10 +10,11 @@
   "scripts": {
     "test": "node --napi-modules ./test/test_binding.js",
     "build": "rm -rf dist && tsc -p tsconfig-build.json",
-    "install": "node-gyp-build",
     "prebuildify": "prebuildify --napi --target 14.0.0 --force --strip --verbose",
     "semantic-release": "semantic-release",
-    "rebuild": "node-gyp rebuild"
+    "install": "echo 'Fake install'",
+    "//install": "node-gyp-build",
+    "//rebuild": "node-gyp rebuild"
   },
   "dependencies": {
     "node-addon-api": "^7.0.0",
