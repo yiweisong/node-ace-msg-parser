@@ -28,7 +28,10 @@ jobs:
           node-version: 16.x
           architecture: ${{ matrix.node }}
       - uses: actions/checkout@v3
-      - run: pip3 install --user setuptools
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+      - run: pip install setuptools
       - run: npm ci
       - run: npm run ${{ matrix.command }} -- ${{ matrix.args }}
       - uses: actions/upload-artifact@v4
@@ -51,7 +54,10 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16.x
-      - run: pip3 install --user setuptools
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+      - run: pip3 install setuptools
       - run: npm ci
       - run: npm run build
       - run: npm run semantic-release
