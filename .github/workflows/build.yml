@@ -50,11 +50,11 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: build-artifacts-darwin-${{ github.run_id }}
-          path: prebuilds/darwin
+          path: prebuilds/
       - uses: actions/download-artifact@v4
         with:
           name: build-artifacts-win32-x64-${{ github.run_id }}
-          path: prebuilds/win32-x64
+          path: prebuilds/
       - uses: actions/setup-node@v3
         with:
           node-version: 16.x
