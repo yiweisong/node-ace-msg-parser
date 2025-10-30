@@ -31,5 +31,9 @@
   "publishConfig": {
     "registry": "https://registry.npmjs.org",
     "provenance": false
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yiweisong/node-ace-msg-parser.git"
   }
 }
