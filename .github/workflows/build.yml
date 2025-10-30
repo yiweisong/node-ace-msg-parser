@@ -66,8 +66,8 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm config set registry https://registry.npmjs.org
       - run: npm run build
-      #- run: npm publish --access public
-      - name: Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
-        run: npx semantic-release
+      - run: npm publish --access public
+      # - name: Release
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+      #   run: npx semantic-release
