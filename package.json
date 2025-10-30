@@ -1,6 +1,6 @@
 {
   "name": "ace-msg-parser",
-  "version": "1.0.6",
+  "version": "1.0.13",
   "description": "A node native add-on for Aceinna device message parser",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
