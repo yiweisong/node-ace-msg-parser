@@ -1,6 +1,7 @@
 #include "types.h"
 #include "message_extractor.h"
 #include <string.h>
+#include <stdio.h>
 
 namespace Aceinna {
   MessageExtractor::MessageExtractor(const Napi::CallbackInfo &info)
@@ -25,15 +26,14 @@ namespace Aceinna {
     Napi::Object options = info[0].As<Napi::Object>();
     if(options.Has("messages")){
         Napi::Array messages = options.Get("messages").As<Napi::Array>();
-
-        for (uint32_t i=0;i<messages.Length();i++)
+        for (uint32_t i = 0;i < messages.Length();i++)
         {
           Napi::Object messageFormat = messages.Get(i).As<Napi::Object>();
           std::string format = messageFormat.Get("format").As<Napi::String>().Utf8Value();
           //need to build an acceptable allowPacketTypes
           Napi::Array allowPacketTypes = messageFormat.Get("allowPacketTypes").As<Napi::Array>();
           std::vector<PacketType> packetTypes = {};
-          for(size_t m=0;m<allowPacketTypes.Length();m++)
+          for(size_t m = 0;m < allowPacketTypes.Length();m++)
           {
             Napi::Object packetType = allowPacketTypes.Get(m).As<Napi::Object>();
             uint16_t id = packetType.Get("id").As<Napi::Number>().Int32Value();
@@ -41,7 +41,7 @@ namespace Aceinna {
             Napi::Array raw = packetType.Get("raw").As<Napi::Array>();
             std::vector<uint8_t> rawPacketType = {};
 
-            for(size_t n=0; n < raw.Length();n++)
+            for(size_t n = 0; n < raw.Length();n++)
             {
               rawPacketType.push_back(raw.Get(n).As<Napi::Number>().Int32Value());  
             }
@@ -54,9 +54,15 @@ namespace Aceinna {
           {
             m_messageAnalyzers.push_back(std::make_shared<AceinnaBinaryMessageAnalyzer>(format, packetTypes, skipCheckCRC));
           }
+
           if (format == FORMAT_NMEA)
           {
             m_messageAnalyzers.push_back(std::make_shared<NMEAMessageAnalyzer>(packetTypes));
+          }
+
+          if (format == FORMAT_ACEINNA_BINARY_UDP)
+          {
+            m_messageAnalyzers.push_back(std::make_shared<HeadlessMessageAnalyzer>(packetTypes));
           }
         }
     }

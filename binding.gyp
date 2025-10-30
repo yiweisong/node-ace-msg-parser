@@ -1,4 +1,7 @@
 {
+  'variables': {
+    'openssl_fips': '' 
+  },
   'targets': [
     {
       'target_name': 'ace-msg-parser',
@@ -8,6 +11,7 @@
         'src/message_extractor.cc',
         'src/analyzers/nmea_analyzer.cc',
         'src/analyzers/aceinna_binary_analyzer.cc',
+        'src/analyzers/headless_analyzer.cc',
       ],
       'include_dirs': ["<!@(node -p \"require('node-addon-api').include\")"],
       'dependencies': ["<!(node -p \"require('node-addon-api').gyp\")"],
@@ -22,10 +26,5 @@
         'VCCLCompilerTool': { 'ExceptionHandling': 1 },
       }
     }
-  ],
-  'variables': {
-    'openssl_fips': '',
-    'openssl_is_fips': 'false',
-    'openssl_quic': 'true',
-  }
+  ]
 }

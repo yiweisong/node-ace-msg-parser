@@ -72,6 +72,12 @@ const INS502NextFormat = {
     ]
 }
 
+const IMU330RA_SFormat = {
+    format: 'AceinnaBinaryUdp', allowPacketTypes: [
+        { id: 0x3253, name: 'S2', raw: [0x53, 0x32] }
+    ]
+}
+
 const buildDataAnalyzer = (key, messageFormats) => {
     return new parsers.MessageParser({
         key,
@@ -79,52 +85,52 @@ const buildDataAnalyzer = (key, messageFormats) => {
     });
 }
 
-const ethernetParser = new parsers.MessageParser({
-    key: 'ethernet-parser-key',
-    messages: [
-        {
-            format: 'NMEA', allowPacketTypes: [
-                { id: 1, name: '$GNGGA', raw: '$GNGGA'.split('').map(t => t.charCodeAt(0)) },
-                { id: 2, name: '$GNZDA', raw: '$GNZDA'.split('').map(t => t.charCodeAt(0)) },
-                //{ id: 3, name: '$GPGGA', raw: '$GPGGA'.split('').map(t => t.charCodeAt(0)) },
-                //{ id: 4, name: '$GPZDA', raw: '$GPZDA'.split('').map(t => t.charCodeAt(0)) },
-            ]
-        },
-        {
-            format: 'AceinnaBinaryV2', allowPacketTypes: [
-                { id: 0x0a01, name: 'imu', raw: [0x01, 0x0a] },
-                { id: 0x0a02, name: 'gnss', raw: [0x02, 0x0a] },
-                { id: 0x0a03, name: 'ins', raw: [0x03, 0x0a] },
-                { id: 0x0a04, name: 'odo', raw: [0x04, 0x0a] },
-                { id: 0x0a05, name: 'diagnostic', raw: [0x05, 0x0a] },
-                { id: 0x0a06, name: 'rtcm_rover', raw: [0x06, 0x0a] },
-                { id: 0x0a07, name: 'misalign', raw: [0x07, 0x0a] },
-                { id: 0x0a09, name: 'power_dr', raw: [0x09, 0x0a] },
-                { id: 0x4d44, name: 'check', raw: [0x44, 0x4d] },
-                { id: 0x6749, name: 'gi', raw: [0x49, 0x67] },
-            ]
-        },
-    ]
-    // user: {
-    //     allows: [
-    //         0x010a, //raw imu
-    //         0x020a, //gnss
-    //         0x030a, //ins
-    //         0x040a, //odometer
-    //         0x050a, //diagnostic
-    //         0x060a, //rtcm_rover
-    //         0x070a, //misalign
-    //         0x090a, //power dr
-    //         0x444d, //check
-    //         0x4967, //gnss integrity
-    //     ],
-    //     packetLengthType: 'uint32',
-    // },
-    // nmea: {
-    //     allows: allowedNMEATypes,
-    // },
-    // skipCheckCRC: true
-});
+// const ethernetParser = new parsers.MessageParser({
+//     key: 'ethernet-parser-key',
+//     messages: [
+//         {
+//             format: 'NMEA', allowPacketTypes: [
+//                 { id: 1, name: '$GNGGA', raw: '$GNGGA'.split('').map(t => t.charCodeAt(0)) },
+//                 { id: 2, name: '$GNZDA', raw: '$GNZDA'.split('').map(t => t.charCodeAt(0)) },
+//                 //{ id: 3, name: '$GPGGA', raw: '$GPGGA'.split('').map(t => t.charCodeAt(0)) },
+//                 //{ id: 4, name: '$GPZDA', raw: '$GPZDA'.split('').map(t => t.charCodeAt(0)) },
+//             ]
+//         },
+//         {
+//             format: 'AceinnaBinaryV2', allowPacketTypes: [
+//                 { id: 0x0a01, name: 'imu', raw: [0x01, 0x0a] },
+//                 { id: 0x0a02, name: 'gnss', raw: [0x02, 0x0a] },
+//                 { id: 0x0a03, name: 'ins', raw: [0x03, 0x0a] },
+//                 { id: 0x0a04, name: 'odo', raw: [0x04, 0x0a] },
+//                 { id: 0x0a05, name: 'diagnostic', raw: [0x05, 0x0a] },
+//                 { id: 0x0a06, name: 'rtcm_rover', raw: [0x06, 0x0a] },
+//                 { id: 0x0a07, name: 'misalign', raw: [0x07, 0x0a] },
+//                 { id: 0x0a09, name: 'power_dr', raw: [0x09, 0x0a] },
+//                 { id: 0x4d44, name: 'check', raw: [0x44, 0x4d] },
+//                 { id: 0x6749, name: 'gi', raw: [0x49, 0x67] },
+//             ]
+//         },
+//     ]
+//     // user: {
+//     //     allows: [
+//     //         0x010a, //raw imu
+//     //         0x020a, //gnss
+//     //         0x030a, //ins
+//     //         0x040a, //odometer
+//     //         0x050a, //diagnostic
+//     //         0x060a, //rtcm_rover
+//     //         0x070a, //misalign
+//     //         0x090a, //power dr
+//     //         0x444d, //check
+//     //         0x4967, //gnss integrity
+//     //     ],
+//     //     packetLengthType: 'uint32',
+//     // },
+//     // nmea: {
+//     //     allows: allowedNMEATypes,
+//     // },
+//     // skipCheckCRC: true
+// });
 
 function testAnalyzer(analyzer, filePath, index) {
     return new Promise((resolve) => {
@@ -171,10 +177,14 @@ function testAnalyzer(analyzer, filePath, index) {
 const analyzers = [];
 const rtk330laDataFile = '/Users/songyiwei/Desktop/debug/20220107/rtk330la_log_2178200286_20220107_145729/user_2022_01_07_14_57_43.bin';
 const ins401DataFile = '/Users/songyiwei/Desktop/debug/20220107/ins401_log_2179000187_20220107_145728/user_2022_01_07_14_57_36.bin';
-const ins502nextDataFile = '/Users/songyiwei/Desktop/debug/20240627/raw_2024_06_27_09_24_02.bin';
+const ins502nextDataFile = '/Users/songyiwei/Desktop/transfer/20251017/ins502/user_2025_09_10_13_43_04.bin';
+const imu330ra_sDataFile = '/Users/songyiwei/Desktop/transfer/20251017/imu330ra-s/user_2024_11_08_13_46_25.bin';
 
-const analyzer = buildDataAnalyzer(`ins502-next-parser`, [NMEAFormat,INS502NextFormat]);
-testAnalyzer(analyzer, ins502nextDataFile, 0).then(res=>console.log('parser done'));
+//const analyzer = buildDataAnalyzer(`ins502-next-parser`, [NMEAFormat, INS502NextFormat]);
+//testAnalyzer(analyzer, ins502nextDataFile, 0).then(res => console.log('parser done'));
+
+const analyzer = buildDataAnalyzer(`imu330-ra-parser`, [IMU330RA_SFormat]);
+testAnalyzer(analyzer, imu330ra_sDataFile, 0).then(res => console.log('parser done'));
 
 // for (let i = 0; i < 1; i++) {
 //     const analyzer = buildDataAnalyzer(`uart-parser-${i}`, [NMEAFormat, RTK330LAUartFormat]);

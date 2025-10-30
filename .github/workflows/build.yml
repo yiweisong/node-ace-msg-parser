@@ -3,6 +3,11 @@ on:
   push:
     branches:
       - main
+
+permissions:
+  id-token: write
+  contents: write
+
 concurrency:
   group: build-${{ github.ref }}
   cancel-in-progress: false
@@ -16,18 +21,18 @@ jobs:
             node: x64
             command: prebuildify
           - name: win32-x64
-            os: windows-2019
+            os: windows-2022
             node: x64
             command: prebuildify
     name: Build ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     steps:
       - if: matrix.node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 16.x
+          node-version: 20.x
           architecture: ${{ matrix.node }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
           python-version: 3.8
@@ -46,7 +51,7 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: build-artifacts-darwin-${{ github.run_id }}
@@ -55,16 +60,20 @@ jobs:
         with:
           name: build-artifacts-win32-x64-${{ github.run_id }}
           path: prebuilds/
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: 16.x
+          node-version: 20
       - uses: actions/setup-python@v4
         with:
           python-version: 3.8
+          registry-url: https://registry.npmjs.org
+      # Ensure npm 11.5.1 or later is installed
       - run: pip3 install setuptools
-      - run: npm ci
+      - name: Update npm
+        run: npm install -g npm@latest
+      - run: npm ci --ignore-scripts
+      - run: npm config set registry https://registry.npmjs.org
       - run: npm run build
       - run: npm run semantic-release
         env:
           GH_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -37,7 +37,7 @@ namespace Aceinna {
         NMEAAnalysisProcessStatus() : flag(0), read_index(0), packet_type_id(0) {}
     };
 
-    struct AceinnaBinaryAnalysisProcessStatus{
+    struct AceinnaBinaryAnalysisProcessStatus {
         uint8_t flag;
         uint8_t format_id;
         uint8_t msg_header[4];
@@ -51,6 +51,18 @@ namespace Aceinna {
         uint8_t payload_offset;
 
         AceinnaBinaryAnalysisProcessStatus() : flag(0), format_id(0), msg_read_index(0), payload_len(0), packet_type_id(0), packet_len_type(0), counter(0), wrapper_len(0), payload_offset(0) {}
+    };
+
+    struct HeadlessAnalysisProcessStatus {
+        uint8_t flag;
+        uint8_t packet_type_check_list[2];
+        uint16_t msg_read_index;
+        uint16_t payload_len;
+        uint8_t msg_buff[2048];
+        uint16_t packet_type_id;
+        uint16_t counter;
+
+        HeadlessAnalysisProcessStatus() : flag(0), msg_read_index(0), payload_len(0), packet_type_id(0), counter(0) {}
     };
 
     class MessageAnalyzer {
@@ -96,6 +108,21 @@ namespace Aceinna {
         std::string m_format;
         std::vector<uint16_t> m_allowPacketTypeIds;
         AceinnaBinaryAnalysisProcessStatus m_processStatus;
+    };
+
+    class HeadlessMessageAnalyzer : public MessageAnalyzer {
+    public:
+        HeadlessMessageAnalyzer(std::vector<PacketType> allow_packet_types);
+        ~HeadlessMessageAnalyzer() = default;
+        void determine(uint8_t byte_data, AnalysisResult& analysis_result) override;
+        bool canExtract(uint8_t* data, size_t data_size) override;
+        void extract(uint8_t* data, size_t data_size, AnalysisResult& analysis_result) override;
+        void reset() override;
+        std::string &name() override;
+    private:
+        std::string m_format;
+        std::vector<uint16_t> m_allowPacketTypeIds;
+        HeadlessAnalysisProcessStatus m_processStatus;
     };
 }
 

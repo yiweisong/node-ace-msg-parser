@@ -10,7 +10,7 @@
   "scripts": {
     "test": "node --napi-modules ./test/test_binding.js",
     "build": "rm -rf dist && tsc -p tsconfig-build.json",
-    "prebuildify": "prebuildify --napi --target 14.0.0 --force --strip --verbose",
+    "prebuildify": "prebuildify --napi --target 22.0.0 --force --strip --verbose",
     "semantic-release": "semantic-release",
     "install": "echo 'Fake install'",
     "//install": "node-gyp-build",
@@ -18,14 +18,19 @@
   },
   "dependencies": {
     "node-addon-api": "^7.0.0",
-    "node-gyp-build": "^4.6.1"
+    "node-gyp-build": "^4.8.4"
   },
   "devDependencies": {
-    "@semantic-release/exec": "^6.0.3",
+    "@semantic-release/exec": "^7.1.0",
     "@types/node": "^20.9.1",
-    "node-gyp": "^9.4.1",
-    "prebuildify": "^5.0.1",
-    "semantic-release": "^19.0.2",
+    "node-gyp": "^11.5.0",
+    "prebuildify": "^6.0.1",
+    "semantic-release": "^25.0.1",
     "typescript": "^5.2.2"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "tag": "latest",
+    "provenance": true
   }
 }
