@@ -72,11 +72,38 @@ const INS502NextFormat = {
     ]
 }
 
-const IMU330RA_SFormat = {
-    format: 'AceinnaBinaryUdp', allowPacketTypes: [
-        { id: 0x3253, name: 'S2', raw: [0x53, 0x32] }
-    ]
-}
+const IMU330RA_SFormats = [
+    {
+        "format": "AceinnaBinaryUdp", "allowPacketTypes": [
+            { "id": 12627, "name": "S1", "raw": [83, 49] },
+            { "id": 12883, "name": "S2", "raw": [83, 50] },
+            { "id": 19782, "name": "FM", "raw": [70, 77] },
+            { "id": 19795, "name": "SM", "raw": [83, 77] },
+            { "id": 17481, "name": "ID", "raw": [73, 68] },
+            { "id": 21078, "name": "VR", "raw": [86, 82] },
+            { "id": 19280, "name": "PK", "raw": [80, 75] },
+            { "id": 20551, "name": "GP", "raw": [71, 80] },
+            { "id": 18007, "name": "WF", "raw": [87, 70] },
+            { "id": 18003, "name": "SF", "raw": [83, 70] },
+            { "id": 18002, "name": "RF", "raw": [82, 70] },
+            { "id": 17991, "name": "GF", "raw": [71, 70] },
+            { "id": 18762, "name": "JI", "raw": [74, 73] },
+            { "id": 16714, "name": "JA", "raw": [74, 65] },
+            { "id": 16727, "name": "WA", "raw": [87, 65] },
+            { "id": 21075, "name": "SR", "raw": [83, 82] }
+        ],
+        "skipCheckCRC": true
+    },
+    {
+        "format": "AceinnaBinaryV2", "allowPacketTypes": [
+            { "id": 52225, "name": "ETH_PING", "raw": [1, 204] },
+            { "id": 43522, "name": "ETH_JA", "raw": [2, 170] },
+            { "id": 43523, "name": "ETH_WA", "raw": [3, 170] },
+            { "id": 43524, "name": "ETH_SELECT_CORE", "raw": [4, 170] }],
+        "skipCheckCRC": true
+    }
+]
+
 
 const buildDataAnalyzer = (key, messageFormats) => {
     return new parsers.MessageParser({
@@ -183,7 +210,7 @@ const imu330ra_sDataFile = '/Users/songyiwei/Desktop/transfer/20251017/imu330ra-
 //const analyzer = buildDataAnalyzer(`ins502-next-parser`, [NMEAFormat, INS502NextFormat]);
 //testAnalyzer(analyzer, ins502nextDataFile, 0).then(res => console.log('parser done'));
 
-const analyzer = buildDataAnalyzer(`imu330-ra-parser`, [IMU330RA_SFormat]);
+const analyzer = buildDataAnalyzer(`imu330-ra-parser`, IMU330RA_SFormats);
 testAnalyzer(analyzer, imu330ra_sDataFile, 0).then(res => console.log('parser done'));
 
 // for (let i = 0; i < 1; i++) {

@@ -56,6 +56,7 @@ namespace Aceinna {
 
   void HeadlessMessageAnalyzer::extract(uint8_t* data, size_t data_size, AnalysisResult& analysis_result)
   {
+    //printf("extract packet type id: %u %u\n", analysis_result.packet_type_id, m_processStatus.payload_len);
     uint16_t whole_packet_len = m_processStatus.payload_len + 6; // 6 = 2 bytes packet type + 4 bytes counter and length
     memcpy(m_processStatus.msg_buff, m_processStatus.packet_type_check_list, 2);
     memcpy(m_processStatus.msg_buff + 2, data, whole_packet_len - 2);
@@ -66,6 +67,7 @@ namespace Aceinna {
     analysis_result.length = whole_packet_len;
     analysis_result.payload_offset = 6;
     analysis_result.payload_len = m_processStatus.payload_len;
+    analysis_result.read_size = whole_packet_len - m_processStatus.msg_read_index;
 
     m_processStatus.flag = 0;
     m_processStatus.msg_read_index = 0;
